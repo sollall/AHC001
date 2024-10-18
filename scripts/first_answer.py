@@ -7,7 +7,7 @@ import logging
 
 class Ad_map:
     #数字の意味　0→左に操作 1→上に操作 2→右に操作 3→下に操作
-    SIZE=1
+    SIZE=10
     def __init__(self,N,pos):
         self.pos=pos
         self.N=N
@@ -47,7 +47,6 @@ class Ad_map:
                 return 1
         else:
             return 2
-            
 
     def _make_vertexs(self,target,diff_pos=np.zeros(4,dtype=int)):
         x,y,_=self.pos[target]
@@ -90,10 +89,12 @@ class Ad_map:
 
     def _check_overrange(self,target,diff_pos):
         vertexs=self._make_vertexs(target,diff_pos)
-        if -1 in vertexs or 10**4+1 in vertexs:
-            return False
-        else:
-            return True
+        logging.error(vertexs)
+        for vertex in vertexs:
+            if vertex<0 or vertex>10**4:
+                return False
+        
+        return True
     
     def answer(self):
         for n in range(self.N):
