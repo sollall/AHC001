@@ -15,6 +15,8 @@ class Ad_map:
         self.expand=[]
         self.R=[]
         self.happies=[]
+
+        self.results_gen=[0,0]
         
         for i,(x,y,r) in enumerate(pos):
             self.expand.append(np.zeros(4,dtype=int))
@@ -27,7 +29,7 @@ class Ad_map:
 
         dire=random.randint(0,3)
         
-        diff_pos=self._gen_diff_pos(dire,target)
+        diff_pos=self._gen_diff_pos(dire,target,self.happies[target])
         
         if self._check_over(target,diff_pos) and self._check_overrange(target,diff_pos):
             if self._calc_happy(target,diff_pos)>=self.happies[target]:
@@ -41,12 +43,14 @@ class Ad_map:
         else:
             return 2
     
-    def _gen_diff_pos(self,order,target,happy=1.0):
+    def _gen_diff_pos(self,order,target,happy):
+        # 
         x,y,_=self.pos[target]
         
-        is_adjust=True if random.random()<happy else False
+        is_adjust=True if random.random()+0.5<happy else False
         
-        if is_adjust:#check ga tooru atai wo binary search de sagasu
+        if is_adjust:#可能な限りスライドさせる操作
+            self.results_gen[0]+=1
             if order==0:# to left
                 trans_amount=max(-self.expand[target][2],-x)
                 diff_pos=np.array([trans_amount,0,-trans_amount,0],dtype=int)
@@ -58,11 +62,12 @@ class Ad_map:
                 diff_pos=np.array([-trans_amount,0,trans_amount,0],dtype=int)
             elif order==3:
                 trans_amount=min(-self.expand[target][1],self.MAX_MAP-y)
-                diff_pos=np.array([0,trans_amount,0,-trans_amount],dtype=int)
+                diff_pos=np.array([0,-trans_amount,0,trans_amount],dtype=int)
             elif order==4:
                 raise Exception("invalid direction.")
 
         else:
+            self.results_gen[1]+=1
             if order==0:
                 diff_pos=np.array([-self.SIZE,0,0,0],dtype=int)
             elif order==1:
@@ -152,6 +157,7 @@ def solve():
         results[result_code]+=1
     
     logging.error(f"{results}")
+    logging.error(f"{test.results_gen}")
 
     test.answer()
 
