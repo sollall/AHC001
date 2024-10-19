@@ -43,44 +43,44 @@ class Ad_map:
         else:
             return 2
     
-    def _gen_diff_pos(self,order,target,happy):
-        # 
+    def _slide_diff_pos(self,order,target):
+        
         x,y,_=self.pos[target]
         
-        is_adjust=True if random.random()+0.5<happy else False
+        if order==0:# to left
+            trans_amount=max(-self.expand[target][2],-x)
+            diff_pos=np.array([trans_amount,0,-trans_amount,0],dtype=int)
+        elif order==1:
+            trans_amount=max(self.expand[target][3],y)
+            diff_pos=np.array([0,trans_amount,0,-trans_amount],dtype=int)
+        elif order==2:
+            trans_amount=min(-self.expand[target][0],self.MAX_MAP-x)
+            diff_pos=np.array([-trans_amount,0,trans_amount,0],dtype=int)
+        elif order==3:
+            trans_amount=min(-self.expand[target][1],self.MAX_MAP-y)
+            diff_pos=np.array([0,-trans_amount,0,trans_amount],dtype=int)
+        elif order==4:
+            raise Exception("invalid direction.")
         
-        if is_adjust:#可能な限りスライドさせる操作
-            self.results_gen[0]+=1
-            if order==0:# to left
-                trans_amount=max(-self.expand[target][2],-x)
-                diff_pos=np.array([trans_amount,0,-trans_amount,0],dtype=int)
-            elif order==1:
-                trans_amount=max(self.expand[target][3],y)
-                diff_pos=np.array([0,trans_amount,0,-trans_amount],dtype=int)
-            elif order==2:
-                trans_amount=min(-self.expand[target][0],self.MAX_MAP-x)
-                diff_pos=np.array([-trans_amount,0,trans_amount,0],dtype=int)
-            elif order==3:
-                trans_amount=min(-self.expand[target][1],self.MAX_MAP-y)
-                diff_pos=np.array([0,-trans_amount,0,trans_amount],dtype=int)
-            elif order==4:
-                raise Exception("invalid direction.")
+        return diff_pos
 
+    def _expand_diff_pos(self,order,target):
+        
+        x,y,_=self.pos[target]
+               
+        if order==0:
+            diff_pos=np.array([-self.SIZE,0,0,0],dtype=int)
+        elif order==1:
+            diff_pos=np.array([0,-self.SIZE,0,0],dtype=int)
+        elif order==2:
+            diff_pos=np.array([0,0,self.SIZE,0],dtype=int)
+        elif order==3:
+            diff_pos=np.array([0,0,0,self.SIZE],dtype=int)
+        elif order==4:
+            #check ga tooru atai wo binary search de sagasu
+            diff_pos=np.array([0,0,0,self.SIZE],dtype=int)
         else:
-            self.results_gen[1]+=1
-            if order==0:
-                diff_pos=np.array([-self.SIZE,0,0,0],dtype=int)
-            elif order==1:
-                diff_pos=np.array([0,-self.SIZE,0,0],dtype=int)
-            elif order==2:
-                diff_pos=np.array([0,0,self.SIZE,0],dtype=int)
-            elif order==3:
-                diff_pos=np.array([0,0,0,self.SIZE],dtype=int)
-            elif order==4:
-                #check ga tooru atai wo binary search de sagasu
-                diff_pos=np.array([0,0,0,self.SIZE],dtype=int)
-            else:
-                raise Exception("invalid direction.")
+            raise Exception("invalid direction.")
             
         return diff_pos
 
