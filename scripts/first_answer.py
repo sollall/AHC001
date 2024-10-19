@@ -8,12 +8,15 @@ import logging
 class Ad_map:
     #数字の意味　0→左に操作 1→上に操作 2→右に操作 3→下に操作
     SIZE=10
+    MAX_MAP=10**4
     def __init__(self,N,pos):
         self.pos=pos
         self.N=N
         self.expand=[]
         self.R=[]
         self.happies=[]
+
+        self.results_gen=[0,0]
         
         for i,(x,y,r) in enumerate(pos):
             self.expand.append(np.zeros(4,dtype=int))
@@ -25,19 +28,11 @@ class Ad_map:
         target=random.randint(0,self.N-1)
 
         dire=random.randint(0,3)
-        if dire==0:
-            diff_pos=np.array([-self.SIZE,0,0,0],dtype=int)
-        elif dire==1:
-            diff_pos=np.array([0,-self.SIZE,0,0],dtype=int)
-        elif dire==2:
-            diff_pos=np.array([0,0,self.SIZE,0],dtype=int)
-        elif dire==3:
-            diff_pos=np.array([0,0,0,self.SIZE],dtype=int)
-        else:
-            raise Exception("invalid direction.")
+        
+        diff_pos=self._gen_diff_pos(dire,target,self.happies[target])
         
         if self._check_over(target,diff_pos) and self._check_overrange(target,diff_pos):
-            if self._calc_happy(target,diff_pos)>self.happies[target]:
+            if self._calc_happy(target,diff_pos)>=self.happies[target]:
                 self.expand[target]+=diff_pos
                 self.happies[target]=self._calc_happy(target)
 
@@ -47,6 +42,47 @@ class Ad_map:
                 return 1
         else:
             return 2
+    
+    def _slide_diff_pos(self,order,target):
+        
+        x,y,_=self.pos[target]
+        
+        if order==0:# to left
+            trans_amount=max(-self.expand[target][2],-x)
+            diff_pos=np.array([trans_amount,0,-trans_amount,0],dtype=int)
+        elif order==1:
+            trans_amount=max(self.expand[target][3],y)
+            diff_pos=np.array([0,trans_amount,0,-trans_amount],dtype=int)
+        elif order==2:
+            trans_amount=min(-self.expand[target][0],self.MAX_MAP-x)
+            diff_pos=np.array([-trans_amount,0,trans_amount,0],dtype=int)
+        elif order==3:
+            trans_amount=min(-self.expand[target][1],self.MAX_MAP-y)
+            diff_pos=np.array([0,-trans_amount,0,trans_amount],dtype=int)
+        elif order==4:
+            raise Exception("invalid direction.")
+        
+        return diff_pos
+
+    def _expand_diff_pos(self,order,target):
+        
+        x,y,_=self.pos[target]
+               
+        if order==0:
+            diff_pos=np.array([-self.SIZE,0,0,0],dtype=int)
+        elif order==1:
+            diff_pos=np.array([0,-self.SIZE,0,0],dtype=int)
+        elif order==2:
+            diff_pos=np.array([0,0,self.SIZE,0],dtype=int)
+        elif order==3:
+            diff_pos=np.array([0,0,0,self.SIZE],dtype=int)
+        elif order==4:
+            #check ga tooru atai wo binary search de sagasu
+            diff_pos=np.array([0,0,0,self.SIZE],dtype=int)
+        else:
+            raise Exception("invalid direction.")
+            
+        return diff_pos
 
     def _make_vertexs(self,target,diff_pos=np.zeros(4,dtype=int)):
         x,y,_=self.pos[target]
@@ -91,7 +127,7 @@ class Ad_map:
         vertexs=self._make_vertexs(target,diff_pos)
         logging.error(vertexs)
         for vertex in vertexs:
-            if vertex<0 or vertex>10**4:
+            if vertex<0 or vertex>self.MAX_MAP:
                 return False
         
         return True
@@ -121,6 +157,7 @@ def solve():
         results[result_code]+=1
     
     logging.error(f"{results}")
+    logging.error(f"{test.results_gen}")
 
     test.answer()
 
