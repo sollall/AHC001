@@ -27,7 +27,17 @@ class Ad_map:
         target=random.randint(0,self.N-1)
 
         dire=random.randint(0,3)
-        high,low=self.MAX_MAP,0
+        logging.error(f"max_transfer:{self._get_max_transfer(target)}")
+
+        x_max,y_max=self._get_max_transfer(target)
+
+        if dire==0 or dire==2:
+            high,low=self._get_max_transfer(target)[0],0
+        elif dire==1 or dire==3:
+            high,low=self._get_max_transfer(target)[1],0
+        else:
+            raise Exception("invalid direction")
+
 
         while high-low>1:
             middle=(high+low)//2
@@ -48,6 +58,16 @@ class Ad_map:
         else:             
             return 1
     
+    def _get_max_transfer(self,target):
+        _,_,r=self.pos[target]
+        x1,y1,x2,y2=self._make_vertexs(target)
+
+        #rを満たすための推奨列数を求める
+        x_need=round(r/(y2-y1))-(x2-x1)
+        y_need=round(r/(x2-x1))-(y2-y1)
+
+        return x_need,y_need
+
     def _slide_diff_pos(self,order,target):
         
         x,y,_=self.pos[target]
@@ -124,13 +144,12 @@ class Ad_map:
         
                 if abs(mid_a[0]-mid_b[0])<(width_a+width_b)/2 and abs(mid_a[1]-mid_b[1])<(height_a+height_b)/2:
                     rev=False
-                    logging.error(f"{target}:{ax1,ay1,ax2,ay2},{n}:{bx1,by1,bx2,by2}")
+                    #logging.error(f"{target}:{ax1,ay1,ax2,ay2},{n}:{bx1,by1,bx2,by2}")
 
         return rev
 
     def _check_overrange(self,target,diff_pos):
         vertexs=self._make_vertexs(target,diff_pos)
-        logging.error(vertexs)
         for vertex in vertexs:
             if vertex<0 or vertex>self.MAX_MAP:
                 return False
