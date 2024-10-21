@@ -31,32 +31,38 @@ class Ad_map:
 
         x_max,y_max=self._get_max_transfer(target)
 
-        if dire==0 or dire==2:
-            high,low=self._get_max_transfer(target)[0],0
-        elif dire==1 or dire==3:
-            high,low=self._get_max_transfer(target)[1],0
-        else:
-            raise Exception("invalid direction")
-
-
-        while high-low>1:
-            middle=(high+low)//2
-            diff_pos=self._expand_diff_pos(dire,target,middle)
-
-            if self._run_check(target,diff_pos):
-                low=middle
+        ran_num=random.random()
+        if ran_num<0.5:
+            if dire==0 or dire==2:
+                high,low=self._get_max_transfer(target)[0],0
+            elif dire==1 or dire==3:
+                high,low=self._get_max_transfer(target)[1],0
             else:
-                high=middle
+                raise Exception("invalid direction")
 
-        logging.error(f"{high},{low}")
-        diff_pos=self._expand_diff_pos(dire,target,low)
+            while high-low>1:
+                middle=(high+low)//2
+                diff_pos=self._expand_diff_pos(dire,target,middle)
+
+                if self._run_check(target,diff_pos):
+                    low=middle
+                else:
+                    high=middle
+            diff_pos=self._expand_diff_pos(dire,target,low)
+
+        elif True:
+
+            diff_pos=self._resize_diff_pos(dire,target)
+            if self._run_check(target,diff_pos):
+                pass
+            else:
+                diff_pos=np.zeros(4,dtype=int)
+
+            logging.error(f"amam:{diff_pos}")
         self.expand[target]+=diff_pos
         self.happies[target]=self._calc_happy(target)
         
-        if low!=0:
-            return 0
-        else:             
-            return 1
+        return 0
     
     def _get_max_transfer(self,target):
         _,_,r=self.pos[target]
@@ -101,6 +107,23 @@ class Ad_map:
             diff_pos=np.array([0,0,size,0],dtype=int)
         elif order==3:
             diff_pos=np.array([0,0,0,size],dtype=int)
+        else:
+            raise Exception("invalid direction.")
+            
+        return diff_pos
+
+    def _resize_diff_pos(self,order,target,size=10):
+        
+        x,y,_=self.pos[target]
+
+        if order==0:
+            diff_pos=np.array([min(size,-self.expand[target][0]),-size,0,0],dtype=int)
+        elif order==1:
+            diff_pos=np.array([0,min(size,-self.expand[target][1]),size,0],dtype=int)
+        elif order==2:
+            diff_pos=np.array([0,0,-min(size,self.expand[target][2]),size],dtype=int)
+        elif order==3:
+            diff_pos=np.array([-size,0,0,-min(size,self.expand[target][3])],dtype=int)
         else:
             raise Exception("invalid direction.")
             
