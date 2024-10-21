@@ -7,7 +7,6 @@ import logging
 
 class Ad_map:
     #数字の意味　0→左に操作 1→上に操作 2→右に操作 3→下に操作
-    SIZE=10
     MAX_MAP=10**4
     def __init__(self,N,pos):
         self.pos=pos
@@ -28,20 +27,26 @@ class Ad_map:
         target=random.randint(0,self.N-1)
 
         dire=random.randint(0,3)
-        
-        diff_pos=self._gen_diff_pos(dire,target,self.happies[target])
-        
-        if self._check_over(target,diff_pos) and self._check_overrange(target,diff_pos):
-            if self._calc_happy(target,diff_pos)>=self.happies[target]:
-                self.expand[target]+=diff_pos
-                self.happies[target]=self._calc_happy(target)
+        high,low=self.MAX_MAP,0
 
-                return 0
+        while high-low>1:
+            middle=(high+low)//2
+            diff_pos=self._expand_diff_pos(dire,target,middle)
+
+            if self._run_check(target,diff_pos):
+                low=middle
             else:
-                logging.error(f"幸福度があがらない {self._calc_happy(target,diff_pos),self._calc_happy(target),self.happies[target]}")
-                return 1
-        else:
-            return 2
+                high=middle
+
+        logging.error(f"{high},{low}")
+        diff_pos=self._expand_diff_pos(dire,target,low)
+        self.expand[target]+=diff_pos
+        self.happies[target]=self._calc_happy(target)
+        
+        if low!=0:
+            return 0
+        else:             
+            return 1
     
     def _slide_diff_pos(self,order,target):
         
@@ -64,21 +69,18 @@ class Ad_map:
         
         return diff_pos
 
-    def _expand_diff_pos(self,order,target):
+    def _expand_diff_pos(self,order,target,size=10):
         
         x,y,_=self.pos[target]
                
         if order==0:
-            diff_pos=np.array([-self.SIZE,0,0,0],dtype=int)
+            diff_pos=np.array([-size,0,0,0],dtype=int)
         elif order==1:
-            diff_pos=np.array([0,-self.SIZE,0,0],dtype=int)
+            diff_pos=np.array([0,-size,0,0],dtype=int)
         elif order==2:
-            diff_pos=np.array([0,0,self.SIZE,0],dtype=int)
+            diff_pos=np.array([0,0,size,0],dtype=int)
         elif order==3:
-            diff_pos=np.array([0,0,0,self.SIZE],dtype=int)
-        elif order==4:
-            #check ga tooru atai wo binary search de sagasu
-            diff_pos=np.array([0,0,0,self.SIZE],dtype=int)
+            diff_pos=np.array([0,0,0,size],dtype=int)
         else:
             raise Exception("invalid direction.")
             
@@ -96,6 +98,9 @@ class Ad_map:
         s=(x2-x1)*(y2-y1)
 
         return 1-(1-min(s,r)/max(s,r))**2
+
+    def _run_check(self,target,diff_pos):
+        return self._check_over(target,diff_pos) and self._check_overrange(target,diff_pos)
 
     def _check_over(self,target:int,diff_pos):
         x,y,_=self.pos[target]
