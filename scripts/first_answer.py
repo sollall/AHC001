@@ -27,12 +27,10 @@ class Ad_map:
         target=random.randint(0,self.N-1)
 
         dire=random.randint(0,3)
-        logging.error(f"max_transfer:{self._get_max_transfer(target)}")
-
         x_max,y_max=self._get_max_transfer(target)
 
         ran_num=random.random()
-        if ran_num<0.5:
+        if ran_num<1.0:
             if dire==0 or dire==2:
                 high,low=self._get_max_transfer(target)[0],0
             elif dire==1 or dire==3:
@@ -51,14 +49,15 @@ class Ad_map:
             diff_pos=self._expand_diff_pos(dire,target,low)
 
         elif True:
-
-            diff_pos=self._resize_diff_pos(dire,target)
+            if sum(self.expand[target])==0:
+                return 1
+            diff_pos=self._divid_expand(target)
             if self._run_check(target,diff_pos):
                 pass
             else:
-                diff_pos=np.zeros(4,dtype=int)
-
-            logging.error(f"amam:{diff_pos}")
+                logging.error(f"amam:{diff_pos}")
+                return 2
+    
         self.expand[target]+=diff_pos
         self.happies[target]=self._calc_happy(target)
         
@@ -111,6 +110,19 @@ class Ad_map:
             raise Exception("invalid direction.")
             
         return diff_pos
+
+    def _divid_expand(self,target):
+        amount_expand=sum([abs(item) for item in self.expand[target]])
+        share_plan=[random.random() for _ in range(4)]
+        
+        total_share=sum(share_plan)
+        share=[amount_expand*item/total_share//1 for item in share_plan]
+        share[0]*=(-1)
+        share[1]*=(-1)
+        
+        share=np.array(share,dtype=int)
+
+        return share
 
     def _resize_diff_pos(self,order,target,size=10):
         
