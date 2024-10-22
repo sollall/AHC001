@@ -8,6 +8,7 @@ import logging
 class Ad_map:
     #数字の意味　0→左に操作 1→上に操作 2→右に操作 3→下に操作
     MAX_MAP=10**4
+    EXPAND_MAX=100
     def __init__(self,N,pos):
         self.pos=pos
         self.N=N
@@ -29,34 +30,17 @@ class Ad_map:
         dire=random.randint(0,3)
         x_max,y_max=self._get_max_transfer(target)
 
-        ran_num=random.random()
-        if ran_num<1.0:
-            if dire==0 or dire==2:
-                high,low=self._get_max_transfer(target)[0],0
-            elif dire==1 or dire==3:
-                high,low=self._get_max_transfer(target)[1],0
+        high,low=self.EXPAND_MAX,0
+
+        while high-low>1:
+            middle=(high+low)//2
+            diff_pos=self._expand_diff_pos(dire,target,middle)
+
+            if self._run_check(target,diff_pos) and (self.happies[target]<=self._calc_happy(target)):
+                low=middle
             else:
-                raise Exception("invalid direction")
-
-            while high-low>1:
-                middle=(high+low)//2
-                diff_pos=self._expand_diff_pos(dire,target,middle)
-
-                if self._run_check(target,diff_pos):
-                    low=middle
-                else:
-                    high=middle
-            diff_pos=self._expand_diff_pos(dire,target,low)
-
-        elif True:
-            if sum(self.expand[target])==0:
-                return 1
-            diff_pos=self._divid_expand(target)
-            if self._run_check(target,diff_pos):
-                pass
-            else:
-                logging.error(f"amam:{diff_pos}")
-                return 2
+                high=middle
+        diff_pos=self._expand_diff_pos(dire,target,low)
     
         self.expand[target]+=diff_pos
         self.happies[target]=self._calc_happy(target)
