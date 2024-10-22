@@ -7,8 +7,8 @@ import logging
 
 class Ad_map:
     #数字の意味　0→左に操作 1→上に操作 2→右に操作 3→下に操作
-    SIZE=10
     MAX_MAP=10**4
+    EXPAND_MAX=100
     def __init__(self,N,pos):
         self.pos=pos
         self.N=N
@@ -28,21 +28,35 @@ class Ad_map:
         target=random.randint(0,self.N-1)
 
         dire=random.randint(0,3)
-        
-        diff_pos=self._gen_diff_pos(dire,target,self.happies[target])
-        
-        if self._check_over(target,diff_pos) and self._check_overrange(target,diff_pos):
-            if self._calc_happy(target,diff_pos)>=self.happies[target]:
-                self.expand[target]+=diff_pos
-                self.happies[target]=self._calc_happy(target)
+        x_max,y_max=self._get_max_transfer(target)
 
-                return 0
+        high,low=self.EXPAND_MAX,0
+
+        while high-low>1:
+            middle=(high+low)//2
+            diff_pos=self._expand_diff_pos(dire,target,middle)
+
+            if self._run_check(target,diff_pos) and (self.happies[target]<=self._calc_happy(target)):
+                low=middle
             else:
-                logging.error(f"幸福度があがらない {self._calc_happy(target,diff_pos),self._calc_happy(target),self.happies[target]}")
-                return 1
-        else:
-            return 2
+                high=middle
+        diff_pos=self._expand_diff_pos(dire,target,low)
     
+        self.expand[target]+=diff_pos
+        self.happies[target]=self._calc_happy(target)
+        
+        return 0
+    
+    def _get_max_transfer(self,target):
+        _,_,r=self.pos[target]
+        x1,y1,x2,y2=self._make_vertexs(target)
+
+        #rを満たすための推奨列数を求める
+        x_need=round(r/(y2-y1))-(x2-x1)
+        y_need=round(r/(x2-x1))-(y2-y1)
+
+        return x_need,y_need
+
     def _slide_diff_pos(self,order,target):
         
         x,y,_=self.pos[target]
@@ -64,21 +78,48 @@ class Ad_map:
         
         return diff_pos
 
-    def _expand_diff_pos(self,order,target):
+    def _expand_diff_pos(self,order,target,size=10):
         
         x,y,_=self.pos[target]
                
         if order==0:
-            diff_pos=np.array([-self.SIZE,0,0,0],dtype=int)
+            diff_pos=np.array([-size,0,0,0],dtype=int)
         elif order==1:
-            diff_pos=np.array([0,-self.SIZE,0,0],dtype=int)
+            diff_pos=np.array([0,-size,0,0],dtype=int)
         elif order==2:
-            diff_pos=np.array([0,0,self.SIZE,0],dtype=int)
+            diff_pos=np.array([0,0,size,0],dtype=int)
         elif order==3:
-            diff_pos=np.array([0,0,0,self.SIZE],dtype=int)
-        elif order==4:
-            #check ga tooru atai wo binary search de sagasu
-            diff_pos=np.array([0,0,0,self.SIZE],dtype=int)
+            diff_pos=np.array([0,0,0,size],dtype=int)
+        else:
+            raise Exception("invalid direction.")
+            
+        return diff_pos
+
+    def _divid_expand(self,target):
+        amount_expand=sum([abs(item) for item in self.expand[target]])
+        share_plan=[random.random() for _ in range(4)]
+        
+        total_share=sum(share_plan)
+        share=[amount_expand*item/total_share//1 for item in share_plan]
+        share[0]*=(-1)
+        share[1]*=(-1)
+        
+        share=np.array(share,dtype=int)
+
+        return share
+
+    def _resize_diff_pos(self,order,target,size=10):
+        
+        x,y,_=self.pos[target]
+
+        if order==0:
+            diff_pos=np.array([min(size,-self.expand[target][0]),-size,0,0],dtype=int)
+        elif order==1:
+            diff_pos=np.array([0,min(size,-self.expand[target][1]),size,0],dtype=int)
+        elif order==2:
+            diff_pos=np.array([0,0,-min(size,self.expand[target][2]),size],dtype=int)
+        elif order==3:
+            diff_pos=np.array([-size,0,0,-min(size,self.expand[target][3])],dtype=int)
         else:
             raise Exception("invalid direction.")
             
@@ -96,6 +137,9 @@ class Ad_map:
         s=(x2-x1)*(y2-y1)
 
         return 1-(1-min(s,r)/max(s,r))**2
+
+    def _run_check(self,target,diff_pos):
+        return self._check_over(target,diff_pos) and self._check_overrange(target,diff_pos)
 
     def _check_over(self,target:int,diff_pos):
         x,y,_=self.pos[target]
@@ -119,13 +163,12 @@ class Ad_map:
         
                 if abs(mid_a[0]-mid_b[0])<(width_a+width_b)/2 and abs(mid_a[1]-mid_b[1])<(height_a+height_b)/2:
                     rev=False
-                    logging.error(f"{target}:{ax1,ay1,ax2,ay2},{n}:{bx1,by1,bx2,by2}")
+                    #logging.error(f"{target}:{ax1,ay1,ax2,ay2},{n}:{bx1,by1,bx2,by2}")
 
         return rev
 
     def _check_overrange(self,target,diff_pos):
         vertexs=self._make_vertexs(target,diff_pos)
-        logging.error(vertexs)
         for vertex in vertexs:
             if vertex<0 or vertex>self.MAX_MAP:
                 return False
