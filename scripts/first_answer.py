@@ -7,7 +7,7 @@ import logging
 
 class Ad_map:
     #数字の意味　0→左に操作 1→上に操作 2→右に操作 3→下に操作
-    SIZE=10
+    SIZE=50
     MAX_MAP=10**4
     def __init__(self,N,pos):
         self.pos=pos
@@ -29,7 +29,7 @@ class Ad_map:
 
         dire=random.randint(0,3)
         
-        diff_pos=self._gen_diff_pos(dire,target,self.happies[target])
+        diff_pos=self._expand_diff_pos(dire,target)
         
         if self._check_over(target,diff_pos) and self._check_overrange(target,diff_pos):
             if self._calc_happy(target,diff_pos)>=self.happies[target]:
