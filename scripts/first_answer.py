@@ -39,7 +39,14 @@ class Ad_map:
                 return 0
             else:
                 logging.error(f"幸福度があがらない {self._calc_happy(target,diff_pos),self._calc_happy(target),self.happies[target]}")
-                return 1
+                diff_pos=self._slide_diff_pos(dire,target)
+                if self._check_over(target,diff_pos) and self._check_overrange(target,diff_pos):
+                    if self._calc_happy(target,diff_pos)>=self.happies[target]:
+                        self.expand[target]+=diff_pos
+                        self.happies[target]=self._calc_happy(target)
+                    return 1
+                
+                return 3
         else:
             return 2
     
@@ -151,7 +158,7 @@ def solve():
         
     test=Ad_map(N,pos)
 
-    results=[0,0,0]
+    results=[0,0,0,0]
     while time.time()-start<LIMIT:
         result_code=test.sampling()
         results[result_code]+=1
