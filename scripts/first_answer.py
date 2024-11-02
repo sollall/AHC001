@@ -23,9 +23,9 @@ class Ad_map:
             self.R.append(r)
             self.happies.append(self._calc_happy(i))
 
-    def sampling(self):
+    def sampling(self,target):
         #randomに選ぶ
-        target=random.randint(0,self.N-1)
+        #target=random.randint(0,self.N-1)
 
         dire=random.randint(0,3)
         
@@ -37,18 +37,19 @@ class Ad_map:
                 self.happies[target]=self._calc_happy(target)
 
                 return 0
-            else:
-                logging.error(f"幸福度があがらない {self._calc_happy(target,diff_pos),self._calc_happy(target),self.happies[target]}")
-                diff_pos=self._slide_diff_pos(dire,target)
-                if self._check_over(target,diff_pos) and self._check_overrange(target,diff_pos):
-                    if self._calc_happy(target,diff_pos)>=self.happies[target]:
-                        self.expand[target]+=diff_pos
-                        self.happies[target]=self._calc_happy(target)
-                    return 1
-                
-                return 3
-        else:
-            return 2
+
+        logging.error(f"幸福度があがらない {self._calc_happy(target,diff_pos),self._calc_happy(target),self.happies[target]}")
+        
+        dire=random.randint(0,3)
+        diff_pos=self._slide_diff_pos(dire,target)
+        if self._check_over(target,diff_pos) and self._check_overrange(target,diff_pos):
+            if self._calc_happy(target,diff_pos)>=self.happies[target]:
+                self.expand[target]+=diff_pos
+                self.happies[target]=self._calc_happy(target)
+            return 1
+            
+        
+        return 2
     
     def _slide_diff_pos(self,order,target):
         
@@ -159,9 +160,11 @@ def solve():
     test=Ad_map(N,pos)
 
     results=[0,0,0,0]
+    target_count=0
     while time.time()-start<LIMIT:
-        result_code=test.sampling()
+        result_code=test.sampling(target_count%N)
         results[result_code]+=1
+        target_count+=1
     
     logging.error(f"{results}")
     logging.error(f"{test.results_gen}")
