@@ -1,5 +1,28 @@
 # AHC_template
 
+## セットアップ
+
+### 依存関係のインストール
+```bash
+pip install -r requirements.txt
+```
+
+### テストケースのダウンロード
+AtCoderから自動的にテストケースをダウンロードできます：
+
+```bash
+# コンテストIDを指定
+python download_testcases.py ahc001
+
+# または、問題のURLを直接指定
+python download_testcases.py https://atcoder.jp/contests/ahc001/tasks/ahc001_a
+```
+
+このコマンドは以下を自動的に行います：
+- テストケースを`in/`ディレクトリにダウンロード
+- ファイル名を`0000.txt`, `0001.txt`, ... の形式にリネーム
+- `out/`ディレクトリに対応する空ファイルを作成
+
 ## 使い方
 以下のコマンドを参考に、AHC提出用のスクリプトを引数で指定してdebug.pyを実行することで各テストケースを実行することができる。
 
