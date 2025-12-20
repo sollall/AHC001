@@ -3,3 +3,6 @@ optuna
 mlflow
 hydra-core
 hydra-optuna-sweeper
+online-judge-tools
+beautifulsoup4
+requests
