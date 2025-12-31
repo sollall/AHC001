@@ -7,21 +7,24 @@
 pip install -r requirements.txt
 ```
 
-### テストケースのダウンロード
-AtCoderから自動的にテストケースをダウンロードできます：
+### テストケースの生成
+ジェネレーターを使って自動的にテストケースを生成できます（デフォルト100個）：
 
 ```bash
-# コンテストIDを指定
-python download_testcases.py ahc001
+# ジェネレーターで100個生成（シード0-99）
+python download_testcases.py --generator tools/gen.exe --num-tests 100
 
-# または、問題のURLを直接指定
-python download_testcases.py https://atcoder.jp/contests/ahc001/tasks/ahc001_a
+# または、シード範囲を指定
+python download_testcases.py --generator ./gen --seeds 0-99
+
+# サンプルケースもダウンロードする場合
+python download_testcases.py ahc001 --generator tools/gen.exe --num-tests 100
 ```
 
 このコマンドは以下を自動的に行います：
-- テストケースを`in/`ディレクトリにダウンロード
-- ファイル名を`0000.txt`, `0001.txt`, ... の形式にリネーム
-- `out/`ディレクトリに対応する空ファイルを作成
+- ジェネレーターを使ってシード値から入力ファイルを生成
+- ファイル名を`0000.txt`, `0001.txt`, ... の形式で保存
+- `in/`ディレクトリに保存
 
 ## 使い方
 以下のコマンドを参考に、AHC提出用のスクリプトを引数で指定してdebug.pyを実行することで各テストケースを実行することができる。
