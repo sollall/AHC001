@@ -46,16 +46,25 @@ def generate_testcases(generator_path: str, num_tests: int, input_dir: str = "in
 
     print(f"\n🚀 テストケースを生成中...")
 
+    # Pythonスクリプトかどうかを判定
+    is_python = generator_path.endswith('.py')
+
     success_count = 0
     for i in range(num_tests):
         seed = seed_start + i
         output_file = input_path / f"{str(i).zfill(4)}.txt"
 
         try:
+            # コマンドを構築
+            if is_python:
+                cmd = ["python", str(gen_path), str(seed)]
+            else:
+                cmd = [str(gen_path), str(seed)]
+
             # ジェネレーターを実行してファイルに書き込み
             with open(output_file, 'w') as f:
                 result = subprocess.run(
-                    [str(gen_path), str(seed)],
+                    cmd,
                     stdout=f,
                     stderr=subprocess.PIPE,
                     text=True
@@ -174,7 +183,8 @@ def main():
 
     parser.add_argument(
         '--generator', '-g',
-        help='テストケースジェネレーターのパス (例: tools/gen.exe)'
+        default='ahc001_generator.py',
+        help='テストケースジェネレーターのパス (デフォルト: ahc001_generator.py)'
     )
 
     parser.add_argument(
